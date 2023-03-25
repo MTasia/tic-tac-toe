@@ -150,29 +150,31 @@ def find_field(crop_img, img0):
     return [(line_y_min, line_x_min), (line_y_max, line_x_max)]
 
 
-def find_figure(cell_img, img0):
-    crossTepm = cv2.imread('./temp/crossPattern.jpg')
-    circleTepm = cv2.imread('./temp/circlePattern.jpg')
+def find_figure(img, img0):
+    tempCrosss = cv2.imread('./temp/crossPattern.jpg', cv2.IMREAD_GRAYSCALE)
+    tempCircle = cv2.imread('./temp/circlePattern.jpg', cv2.IMREAD_GRAYSCALE)
 
-    w, h = crossTepm.shape[:2]
+    w, h = tempCrosss.shape[:2]
+    res = cv2.matchTemplate(img, tempCircle, cv2.TM_CCOEFF_NORMED)
+    threshold = 0.8
+    loc = np.where(res >= threshold)
+    circle = []
+    for pt in zip(*loc[::-1]):
+        circle.append([pt, (pt[0] + w, pt[1] + h)])
+        cv2.rectangle(img0, pt, (pt[0] + w, pt[1] + h), (255, 0, 0), 2)
 
-    # imageGray = cv2.cvtColor(img0, cv2.COLOR_BGR2GRAY)
-    crossTepmGray = cv2.cvtColor(crossTepm, cv2.COLOR_BGR2GRAY)
-    circleTepmGray = cv2.cvtColor(circleTepm, cv2.COLOR_BGR2GRAY)
+    res1 = cv2.matchTemplate(img, tempCrosss, cv2.TM_CCOEFF_NORMED)
+    threshold = 0.8
+    loc1 = np.where(res1 >= threshold)
+    cross = []
+    for pt in zip(*loc1[::-1]):
+        cross.append([pt, (pt[0] + w, pt[1] + h)])
+        cv2.rectangle(img0, pt, (pt[0] + w, pt[1] + h), (0, 255, 0), 2)
 
-    # find cross
-    res = cv2.matchTemplate(cell_img, circleTepmGray, cv2.TM_CCOEFF)
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-    top_left = max_loc
-    bottom_right = (top_left[0] + w, top_left[1] + h)
-    cv2.rectangle(img0, top_left, bottom_right, (255, 0, 0), 2)
-    cv2.imshow("cell temp", img0)
+    cv2.imshow('cross', img0)
     cv2.waitKey(0)
 
-    # find circle
-    circleResult = cv2.matchTemplate(cell_img, crossTepmGray, cv2.TM_CCOEFF_NORMED)
-
-    return 0
+    return circle, cross
 
 
 def find_tic_tac_toe(crop_img, field_contours, img0):
@@ -181,71 +183,77 @@ def find_tic_tac_toe(crop_img, field_contours, img0):
     y1, x1, = int(y0 + 1 / 3 * field_h), int(x0 + 1 / 3 * field_w)
     y2, x2, = int(y0 + 2 / 3 * field_h), int(x0 + 2 / 3 * field_w)
     field_point = [[y0, y1, y2, y3], [x0, x1, x2, x3]]
+    circle, cross = find_figure(crop_img, img0)
 
     n = 3
-    field = [[0 for j in range(n)] for j in range(n)]
+    field = [['-' for j in range(n)] for j in range(n)]
 
-    e = -10
-    # 0 0
-    cell_img = crop_img[x0 + e:x1 - e, y0 + e:y1 - e]
-    cell_img0 = img0[x0 + e:x1 - e, y0 + e:y1 - e]
-    figure = find_figure(cell_img, cell_img0)
-    field[0][0] = figure
+    # circle
+    for i in range(len(circle)):
+        yu, xu = circle[i][0]
+        yd, xd = circle[i][1]
+        xc = int((xu + xd) / 2)
+        yc = int((yu + yd) / 2)
 
-    # 0 1
-    cell_img = crop_img[x0 + e:x1 - e, y1 + e:y2 - e]
-    cell_img0 = img0[x0 + e:x1 - e, y1 + e:y2 - e]
-    figure = find_figure(cell_img, cell_img0)
-    field[0][1] = figure
+        # cv2.circle(img0, (yc, xc), 6, (0, 0, 255), 3)
+        # cv2.circle(img0, (y0, x0), 6, (0, 0, 255), 3)
+        # cv2.circle(img0, (y1, x1), 6, (0, 0, 255), 3)
 
-    # 0 2
-    cell_img = crop_img[x0 + e:x1 - e, y2 + e:y3 - e]
-    cell_img0 = img0[x0 + e:x1 - e, y2 + e:y3 - e]
-    figure = find_figure(cell_img, cell_img0)
-    field[0][2] = figure
+        # 00 - 02
+        if y0 < yc < y1 and x0 < xc < x1:
+            field[0][0] = 'o'
+        elif y0 < yc < y1 and x1 < xc < x2:
+            field[1][0] = 'o'
+        elif y0 < yc < y1 and x2 < xc < x3:
+            field[2][0] = 'o'
+        # 10 - 12
+        elif y1 < yc < y2 and x0 < xc < x1:
+            field[0][1] = 'o'
+        elif y1 < yc < y2 and x1 < xc < x2:
+            field[1][1] = 'o'
+        elif y1 < yc < y2 and x2 < xc < x3:
+            field[2][1] = 'o'
+        # 20 - 22
+        elif y2 < yc < y3 and x0 < xc < x1:
+            field[0][2] = 'o'
+        elif y2 < yc < y3 and x1 < xc < x2:
+            field[0][2] = 'o'
+        elif y2 < yc < y3 and x2 < xc < x3:
+            field[0][2] = 'o'
 
-    # 1 0
-    cell_img = crop_img[x1 + e:x2 - e, y0 + e:y1 - e]
-    cell_img0 = img0[x1 + e:x2 - e, y0 + e:y1 - e]
-    figure = find_figure(cell_img, cell_img0)
-    field[1][0] = figure
+    # cross
+    x = 'x'
+    for i in range(len(cross)):
+        yu, xu = cross[i][0]
+        yd, xd = cross[i][1]
+        xc = int((xu + xd) / 2)
+        yc = int((yu + yd) / 2)
 
-    # 1 1
-    cell_img = crop_img[x1 + e:x2 - e, y1 + e:y2 - e]
-    cell_img0 = img0[x1 + e:x2 - e, y1 + e:y2 - e]
-    figure = find_figure(cell_img, cell_img0)
-    field[1][1] = figure
+        # cv2.circle(img0, (yc, xc), 6, (0, 0, 255), 3)
+        # cv2.circle(img0, (y0, x0), 6, (0, 0, 255), 3)
+        # cv2.circle(img0, (y1, x1), 6, (0, 0, 255), 3)
 
-    # 1 2
-    cell_img = crop_img[x1 + e:x2 - e, y2 + e:y3 - e]
-    cell_img0 = img0[x1 + e:x2 - e, y2 + e:y3 - e]
-    figure = find_figure(cell_img, cell_img0)
-    field[1][2] = figure
-
-    # 2 0
-    cell_img = crop_img[x2 + e:x3 - e, y0 + e:y1 - e]
-    cell_img0 = img0[x2 + e:x3 - e, y0 + e:y1 - e]
-    figure = find_figure(cell_img, cell_img0)
-    field[2][0] = figure
-
-    # 2 1
-    cell_img = crop_img[x2 + e:x3 - e, y1 + e:y2 - e]
-    cell_img0 = img0[x2 + e:x3 - e, y1 + e:y2 - e]
-    figure = find_figure(cell_img, cell_img0)
-    field[2][1] = figure
-
-    # 2 2
-    cell_img = crop_img[x2 + e:x3 - e, y2 + e:y3 - e]
-    cell_img0 = img0[x2 + e:x3 - e, y2 + e:y3 - e]
-    figure = find_figure(cell_img, cell_img0)
-    field[2][2] = figure
-
-    # cv2.circle(img0, (y2, x2), 6, (255, 0, 0), 3)
-    # cv2.circle(img0, (y3, x3), 6, (255, 0, 0), 3)
-    # cv2.imshow('cell point', img0)
-    # cv2.waitKey(0)
-    # cv2.imshow("cell", cell_img)
-    # cv2.waitKey(0)
+        # 00 - 02
+        if y0 < yc < y1 and x0 < xc < x1:
+            field[0][0] = x
+        elif y0 < yc < y1 and x1 < xc < x2:
+            field[1][0] = x
+        elif y0 < yc < y1 and x2 < xc < x3:
+            field[2][0] = x
+        # 10 - 12
+        elif y1 < yc < y2 and x0 < xc < x1:
+            field[0][1] = x
+        elif y1 < yc < y2 and x1 < xc < x2:
+            field[1][1] = x
+        elif y1 < yc < y2 and x2 < xc < x3:
+            field[2][1] = x
+        # 20 - 22
+        elif y2 < yc < y3 and x0 < xc < x1:
+            field[0][2] = x
+        elif y2 < yc < y3 and x1 < xc < x2:
+            field[0][2] = x
+        elif y2 < yc < y3 and x2 < xc < x3:
+            field[0][2] = x
 
     return field
 
