@@ -2,33 +2,40 @@ import numpy as np
 import cv2
 
 from find_play_field import find_play_field
-from play import play
+from play import play, create_field
+from utils.const import *
+from utils.helps import *
 
 
 def main():
     counter = 0
-    n = 3
 
-    robot = 'x'
-    # если про первой итерации поле путое - 1 ходит робот крестиками (по дефолту робот ходит первым)
-    # если на поле уже есть крестик, то робот ходит вторым ноликами
+    robot = X
+    player = O
+    field = create_field(robot)
+    print_m(field)
 
-    steps = 2
+    steps = 1
     while counter < steps:
         img = cv2.imread('photo/tic3.jpg')
 
-        field = find_play_field(img)
-        print(field)
+        detect_field = find_play_field(img)
+        print_m(detect_field)
 
-        if counter == 0:
-            for i in range(n):
-                for j in range(n):
-                    if field[i][j] != 0:
-                        robot = 2
+        for i in range(N):
+            for j in range(N):
+                if detect_field[i][j] == NON:
+                    detect_field[i][j] = field[i][j]
 
+        field, status = play(detect_field, robot, player)
+        print_m(field)
 
-        next_field = play(field, robot)
-        print(next_field)
+        if status == ROBOT_WIN:
+            print(ROBOT_WIN)
+            break
+        if status == PLAYER_WIN:
+            print(PLAYER_WIN)
+            break
 
         counter += 1
         print()
