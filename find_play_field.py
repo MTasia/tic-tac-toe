@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 from utils.const import X, O
-from utils.helps import print_m
+from utils.helps import print_m, create_temp
 
 os.chdir('/Users/taya/PycharmProjects/tic-tac-toe/')
 
@@ -155,8 +155,8 @@ def find_field(crop_img, img0):
 
 
 def find_figure(img, img0):
-    tempCrosss = cv2.imread('./temp/crossPattern.jpg', cv2.IMREAD_GRAYSCALE)
-    tempCircle = cv2.imread('./temp/circlePattern.jpg', cv2.IMREAD_GRAYSCALE)
+    tempCrosss = cv2.imread('temp/crossTemp.jpg', cv2.IMREAD_GRAYSCALE)
+    tempCircle = cv2.imread('temp/circleTemp.jpg', cv2.IMREAD_GRAYSCALE)
 
     w, h = tempCrosss.shape[:2]
     res = cv2.matchTemplate(img, tempCircle, cv2.TM_CCOEFF_NORMED)
@@ -175,7 +175,7 @@ def find_figure(img, img0):
         cross.append([pt, (pt[0] + w, pt[1] + h)])
         cv2.rectangle(img0, pt, (pt[0] + w, pt[1] + h), (0, 255, 0), 2)
 
-    cv2.imshow('cross', img0)
+    cv2.imshow('cross and circle', img0)
     cv2.waitKey(0)
 
     return circle, cross
@@ -257,8 +257,6 @@ def find_tic_tac_toe(crop_img, field_contours, img0):
             field[1][2] = X
         elif y2 < yc < y3 and x2 < xc < x3:
             field[2][2] = X
-    print("first field")
-    print_m(field)
 
     return field
 
@@ -278,6 +276,9 @@ def find_play_field(img):
 
     # find the boundaries of the playing field
     field_contours = find_field(crop_img, img0)
+
+    # helper function to create a template
+    create_temp(crop_img, img0, field_contours)
 
     # find tic-tac-toe on the field
     tic_tac_toe = find_tic_tac_toe(crop_img, field_contours, img0)

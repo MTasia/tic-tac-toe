@@ -17,7 +17,7 @@ def main():
 
     steps = 1
     while counter < steps:
-        img = cv2.imread('real_photo/test2.png')
+        img = cv2.imread('real_photo/test3.png')
         # for test image cut off the bottom of the sheet and rotate to 180 deg
         w, h = img.shape[:2]
         delta = 200
