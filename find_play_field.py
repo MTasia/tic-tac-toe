@@ -3,6 +3,9 @@ import os
 import cv2
 import numpy as np
 
+from utils.const import X, O
+from utils.helps import print_m
+
 os.chdir('/Users/taya/PycharmProjects/tic-tac-toe/')
 
 
@@ -29,13 +32,13 @@ def find_line(crop_img, img0, color):
         x1, y1, x2, y2 = points[0]
         # Draw the lines joing the points
         # On the original image
-        # cv2.line(img0, (x1, y1), (x2, y2), color, 2)
+        cv2.line(img0, (x1, y1), (x2, y2), color, 2)
 
         # Maintain a simples lookup list for points
         lines_list.append([(x1, y1), (x2, y2)])
 
-    # cv2.imshow('lines Image', img0)
-    # cv2.waitKey(0)
+    cv2.imshow('lines Image', img0)
+    cv2.waitKey(0)
 
     return lines_list
 
@@ -57,6 +60,7 @@ def preparate_image(img):
 
 def find_contours(thresh):
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
     # убираем лишние контуры
     new_cont = []
     for c in contours:
@@ -97,11 +101,11 @@ def image_cropping(img, img0, thresh, contours):
     # cv2.imshow('cont Image', img)
     # cv2.waitKey(0)
 
-    e = 100
+    e = 30
     img0 = img0[x_min + e:x_max - e, y_min + e:y_max - e]  # не понимаю, почему сначала x а потом y
     crop_img = thresh[x_min + e:x_max - e, y_min + e:y_max - e]
-    cv2.imshow('resize Image', crop_img)
-    cv2.waitKey(0)
+    # cv2.imshow('resize by sheet image', crop_img)
+    # cv2.waitKey(0)
 
     return crop_img, img0
 
@@ -201,28 +205,27 @@ def find_tic_tac_toe(crop_img, field_contours, img0):
 
         # 00 - 02
         if y0 < yc < y1 and x0 < xc < x1:
-            field[0][0] = 'o'
+            field[0][0] = O
         elif y0 < yc < y1 and x1 < xc < x2:
-            field[1][0] = 'o'
+            field[1][0] = O
         elif y0 < yc < y1 and x2 < xc < x3:
-            field[2][0] = 'o'
+            field[2][0] = O
         # 10 - 12
         elif y1 < yc < y2 and x0 < xc < x1:
-            field[0][1] = 'o'
+            field[0][1] = O
         elif y1 < yc < y2 and x1 < xc < x2:
-            field[1][1] = 'o'
+            field[1][1] = O
         elif y1 < yc < y2 and x2 < xc < x3:
-            field[2][1] = 'o'
+            field[2][1] = O
         # 20 - 22
         elif y2 < yc < y3 and x0 < xc < x1:
-            field[0][2] = 'o'
+            field[0][2] = O
         elif y2 < yc < y3 and x1 < xc < x2:
-            field[0][2] = 'o'
+            field[1][2] = O
         elif y2 < yc < y3 and x2 < xc < x3:
-            field[0][2] = 'o'
+            field[2][2] = O
 
     # cross
-    x = 'x'
     for i in range(len(cross)):
         yu, xu = cross[i][0]
         yd, xd = cross[i][1]
@@ -235,47 +238,48 @@ def find_tic_tac_toe(crop_img, field_contours, img0):
 
         # 00 - 02
         if y0 < yc < y1 and x0 < xc < x1:
-            field[0][0] = x
+            field[0][0] = X
         elif y0 < yc < y1 and x1 < xc < x2:
-            field[1][0] = x
+            field[1][0] = X
         elif y0 < yc < y1 and x2 < xc < x3:
-            field[2][0] = x
+            field[2][0] = X
         # 10 - 12
         elif y1 < yc < y2 and x0 < xc < x1:
-            field[0][1] = x
+            field[0][1] = X
         elif y1 < yc < y2 and x1 < xc < x2:
-            field[1][1] = x
+            field[1][1] = X
         elif y1 < yc < y2 and x2 < xc < x3:
-            field[2][1] = x
+            field[2][1] = X
         # 20 - 22
         elif y2 < yc < y3 and x0 < xc < x1:
-            field[0][2] = x
+            field[0][2] = X
         elif y2 < yc < y3 and x1 < xc < x2:
-            field[0][2] = x
+            field[1][2] = X
         elif y2 < yc < y3 and x2 < xc < x3:
-            field[0][2] = x
+            field[2][2] = X
+    print("first field")
+    print_m(field)
 
     return field
 
 
 def find_play_field(img):
     img0 = img
-    w, h = img.shape[:2]
 
     thresh = preparate_image(img)
     cv2.imshow('Blur Image', thresh)
     cv2.waitKey(0)
 
-    # находим границы листа бумаги
+    # find the borders of a sheet of paper
     sheet_contours = find_sheet(thresh, img)
 
-    # обрезаем по контурам листа
+    # cut along the edges of the sheet of paper
     crop_img, img0 = image_cropping(img, img0, thresh, sheet_contours)
 
-    # находим границы игрового поля
+    # find the boundaries of the playing field
     field_contours = find_field(crop_img, img0)
 
-    # находим крестики нолики на поле
+    # find tic-tac-toe on the field
     tic_tac_toe = find_tic_tac_toe(crop_img, field_contours, img0)
 
     return tic_tac_toe
