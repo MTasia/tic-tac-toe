@@ -1,0 +1,37 @@
+MODULE Module1
+    CONST robtarget home_L:=[[-372.112053577,156.622117957,94.913470217],[0.066010726,0.842420918,-0.111214912,0.523068661],[0,0,0,4],[101.964427132,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget camera_1:=[[-195.817890762,156.622524933,94.913459878],[0.06601064,0.842421095,-0.111215108,0.523068345],[0,1,-1,4],[104.728960675,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget camera_2:=[[-63.382,156.622,94.913],[0,1,0,0],[-1,2,-2,4],[106.805812429,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget camera_3:=[[111.642253271,156.622301812,94.912773544],[0.000000045,1,-0.000000117,-0.000000286],[-1,2,-2,4],[106.805801064,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget camera_4:=[[111.642,156.623,500],[0,1,0,0],[-1,1,-2,4],[148.01488893,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget camera_5:=[[-135.95,-31.89,630.84],[0.0339538,0.999031,0.0272543,-0.00640867],[0,0,1,4],[165.212,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget camera_6:=[[-85,-43.39,649.82],[0.0225332,0.747879,-0.663263,-0.0158732],[0,0,2,4],[170.331,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+    PERS tasks task_list{2}:=[["T_ROB_L"],["T_ROB_R"]];
+    VAR syncident R_PutItem;
+    VAR syncident L_PutItem;
+
+
+    PROC main()
+        to_home_L;
+
+        WaitSyncTask R_PutItem,task_list;
+        WaitSyncTask L_PutItem,task_list;
+
+        to_camera;
+        !WaitSyncTask R_PutItem,task_list;
+    ENDPROC
+
+    PROC to_camera()
+        MoveL camera_1,v200,fine,Servo\WObj:=Workobject_MyFrame;
+        MoveL camera_2,v200,fine,Servo\WObj:=Workobject_MyFrame;
+        MoveL camera_3,v200,fine,Servo\WObj:=Workobject_MyFrame;
+        MoveL camera_4,v200,fine,Servo\WObj:=Workobject_MyFrame;
+        MoveL camera_5,v200,fine,Servo\WObj:=Workobject_MyFrame;
+        MoveL camera_6, v200, fine, Servo\WObj:=Workobject_MyFrame;
+    ENDPROC
+
+    PROC to_home_L()
+        MoveJ home_L,v200,z50,Servo\WObj:=Workobject_MyFrame;
+    ENDPROC
+ENDMODULE

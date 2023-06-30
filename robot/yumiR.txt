@@ -1,0 +1,85 @@
+MODULE Module1
+    CONST robtarget Target_10:=[[265.682,-156.622,147.913],[0.066009079,-0.842422602,-0.111215754,-0.523065978],[0,-2,2,4],[-106.124275094,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST jointtarget HomeR:=[[0,-130,30,0,40,0],[-135,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+    PERS tasks task_list{2}:=[["T_ROB_L"],["T_ROB_R"]];
+    VAR syncident R_PutItem;
+    VAR syncident L_PutItem;
+
+    CONST robtarget to_case:=[[265.682,-156.622,147.913],[0.066009079,-0.842422602,-0.111215754,-0.523065978],[0,-2,2,4],[-106.124275094,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget to_case_cross_PRE:=[[331.19,-145.98,158.03],[0.0107431,0.91263,0.40775,-0.0270401],[1,-2,2,4],[-111.303,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    VAR num cross_z := 85.24;
+    VAR robtarget to_case_cross:=[[331.19,-145.98,84.54],[0.0114487,0.923172,0.383286,-0.0267379],[1,-2,2,4],[-111.298,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+    VAR robtarget to_22_cross_PRE:=[[407.44,58.38,158.04],[0.010744,0.912624,0.407763,-0.0270454],[1,-2,2,4],[-127.588,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    VAR robtarget to_22_cross:=[[413.35,64.04,73.53],[0.0111904,0.919116,0.392908,-0.0268863],[1,-2,2,4],[-127.588,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+    VAR num cross_counter := 3;
+    VAR num circle_counter := 2;
+
+    CONST string cross := "X";
+    CONST string circle := "O";
+
+
+     PROC main()
+        g_Calibrate;
+
+        to_home_R;
+        sockInit;
+
+	    !WaitSyncTask L_PutItem,task_list;
+	    WaitSyncTask R_PutItem,task_list;
+	    WaitSyncTask R_PutItem,task_list;
+
+        !IF figure == cross
+        !playToCross
+        !ENDIF
+
+        !IF figure == circle
+        !playToCircle
+        !ENDIF
+
+        MoveL to_case, v200, fine, Servo\WObj:=wobj0;
+        cross_case;
+
+        ! playToCrosss
+        WHILE TRUE DO
+            get_cross;
+
+            SocketSend client \Str:="x and y can be sent";
+            sockGetCell;
+	        SocketSend client \Str:="Cell coord is getting";
+
+            to_22_cross_PRE:=[[Xnum, Ynum, 158.04],[0.010744,0.912624,0.407763,-0.0270454],[1,-2,2,4],[-127.588,9E+09,9E+09,9E+09,9E+09,9E+09]];
+            to_22_cross:=[[Xnum, Ynum, 73.53],[0.0111904,0.919116,0.392908,-0.0268863],[1,-2,2,4],[-127.588,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+            MoveL to_22_cross_PRE, v200, fine, Servo;
+            MoveL to_22_cross, v200, fine, Servo;
+            g_GripOut;
+            MoveL to_22_cross_PRE, v200, fine, Servo;
+
+            cross_case;
+        ENDWHILE
+
+    ENDPROC
+
+    PROC to_home_R()
+        g_GripIn;
+        MoveAbsJ HomeR, v200, z50, tool0;
+    ENDPROC
+
+
+    PROC cross_case()
+        MoveL to_case_cross_PRE, v200, fine, Servo;
+    ENDPROC
+
+
+    PROC get_cross()
+        g_GripOut;
+        MoveL to_case_cross, v200, fine, Servo;
+        g_GripIn;
+        MoveL to_case_cross_PRE, v200, fine, Servo\WObj:=wobj0;
+
+        cross_counter := cross_counter - 1;
+        cross_z := cross_z - 5;
+        to_case_cross:=[[331.19,-145.98,cross_z],[0.0114487,0.923172,0.383286,-0.0267379],[1,-2,2,4],[-111.298,9E+0

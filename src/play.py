@@ -2,18 +2,11 @@ from utils.helps import *
 
 
 def create_field(robot):
-    if robot == X:
-        field = [
-            [20, 10, 20],
-            [10, X, 10],
-            [20, 10, 20]
-        ]
-    else:
-        field = [
-            [20, 10, 20],
-            [10, 30, 10],
-            [20, 10, 20]
-        ]
+    field = [
+        [20, 10, 20],
+        [10, 30, 10],
+        [20, 10, 20]
+    ]
 
     return field
 
@@ -102,7 +95,7 @@ def change_weight_after_payer(field, robot, player):
     # 2 1
     if cell_is_free(field[2][1]):
         if (field[0][1] == player and field[1][1] == player) or \
-                (field[2][0] == player and field[2][2] == player) :
+                (field[2][0] == player and field[2][2] == player):
             field[2][1] = 200
 
     # 2 2

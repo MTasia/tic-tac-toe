@@ -1,0 +1,49 @@
+MODULE MOD1
+    VAR socketdev server;
+    VAR socketdev client;
+
+    VAR string message;
+    VAR string data;
+
+    VAR bool okX;
+    VAR bool okY;
+    VAR string Xstr;
+    VAR string Ystr;
+    VAR num Xnum;
+    VAR num Ynum;
+
+    VAR string figure;
+
+    PROC sockInit()
+        SocketCreate server;
+        SocketBind server, "192.168.125.1", 1025;
+        SocketListen server;
+        SocketAccept server, client;
+        SocketSend client \Str:="Connection with robot is established";
+    ENDPROC
+
+    PROC sockClose()
+        !close communicatin
+        SocketClose server;
+    ENDPROC
+
+    PROC sockGetFigure()
+	    SocketReceive client \Str:=figure;
+    ENDPROC
+
+    PROC sockGetCell()
+        SocketReceive client \Str:=data;
+        Xstr := data;
+        okX:= StrToVal(Xstr, Xnum);
+        SocketSend client \Str:="x is get";
+
+        SocketReceive client \Str:=data;
+        Ystr := data;
+        okY:= StrToVal(Ystr, Ynum);
+        SocketSend client \Str:="y is get";
+    ENDPROC
+
+
+
+
+ENDMODULE

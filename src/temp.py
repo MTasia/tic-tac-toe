@@ -55,8 +55,8 @@ def matchTemp(img_rgb, img_rgb1, img_gray, tempCircle, tempCrosss):
 
 
 def main():
-    img_rgb = cv.imread('photo/tic3.jpg')
-    img_rgb1 = cv.imread('photo/tic3.jpg')
+    img_rgb = cv.imread('../photo/tic3.jpg')
+    img_rgb1 = cv.imread('../photo/tic3.jpg')
     img_gray = cv.cvtColor(img_rgb, cv.COLOR_BGR2GRAY)
     img_gray = cv.blur(img_gray, (7, 7))
 

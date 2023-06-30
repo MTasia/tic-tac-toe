@@ -5,3 +5,6 @@ X = 'x'
 O = 'o'
 NON = '-'
 N = 3
+CELL = 80
+YES = 'y'
+N0 = 'n'

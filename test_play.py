@@ -1,7 +1,4 @@
-from play import *
-
-YES = 'y'
-N0 = 'n'
+from src.play import *
 
 
 def create_visible_field():
